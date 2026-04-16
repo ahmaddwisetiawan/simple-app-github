@@ -3,6 +3,11 @@ run-name: Build, Push and Deploy Image
 on: [push]
 env:
   IMAGE_NAME: "ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan"
+
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-push-image:
     runs-on: ubuntu-latest
@@ -37,8 +42,10 @@ jobs:
       - name: stop and remove existing container
         run: docker compose down --rmi all
       - name: start container
-        run: docker compose up -d
+        run: |
+          docker compose up -d
+          sleep 10  
       - name: view container
         run: docker compose ps
       - name: check container
-        run: curl localhost:8080;
+        run: curl localhost:8080
