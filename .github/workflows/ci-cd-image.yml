@@ -1,4 +1,4 @@
-name: Build, Push and Deploy Docker Image
+name: Build and Deploy
 
 on: [push]
 
@@ -7,41 +7,45 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: "ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan"
+  IMAGE_NAME: ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan
 
 jobs:
   build-push-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Image
+      - name: Build
         run: docker build -t ${{ env.IMAGE_NAME }} .
 
-      - name: Login to GitHub Registry
-        run: echo "${{ secrets.TOKEN_GITHUB }}" | docker login ghcr.io -u ahmaddwisetiawan --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKEN_GITHUB }}
 
-      - name: Push Image
+      - name: Push
         run: docker push ${{ env.IMAGE_NAME }}
 
   deploy:
     needs: build-push-image
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to GitHub Registry
-        run: echo "${{ secrets.TOKEN_GITHUB }}" | docker login ghcr.io -u ahmaddwisetiawan --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKEN_GITHUB }}
 
-      - name: stop and remove existing container
-        run: docker compose down --rmi all || true
-
-      - name: start container
+      - name: Deploy
         run: |
+          docker compose down --rmi all || true
           docker compose up -d
-          sleep 10
-
-      - name: check container
-        run: curl localhost:8080
+          sleep 5
+          curl localhost:8080
