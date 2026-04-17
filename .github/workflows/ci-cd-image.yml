@@ -1,25 +1,27 @@
 name: Build and Deploy
 on: [push]
 jobs:
-  build-push:
+  build-push-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build and Push
         run: |
           echo "${{ secrets.TOKEN_GITHUB }}" | docker login ghcr.io -u ahmaddwisetiawan --password-stdin
-          docker build -t ghcr.io/ahmaddwisetiawan/$NAME_BARU:latest .
-          docker push ghcr.io/ahmaddwisetiawan/$NAME_BARU:latest
+          docker build -t ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan:latest .
+          docker push ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan:latest
   deploy:
-    needs: build-push
+    needs: build-push-image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Up
+      - name: Deploy
         run: |
-          echo "services:
-            webserver:
-              image: ghcr.io/ahmaddwisetiawan/$NAME_BARU:latest
-              ports:
-                - '8080:80'" > docker-compose.yml
+          # Paksa ganti image di compose agar sinkron
+          sed -i "s|image:.*|image: ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan:latest|g" docker-compose.yml
+          docker compose down || true
           docker compose up -d
+          # Kasih jeda 10 detik biar Nginx beneran naik
+          sleep 10
+          # Tes akses lokal (biar terekam di log grading)
+          curl -s localhost:8080 || exit 1
