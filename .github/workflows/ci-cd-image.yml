@@ -23,7 +23,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ahmaddwisetiawan
           password: ${{ secrets.TOKEN_GITHUB }}
 
       - name: Push
@@ -40,7 +40,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ahmaddwisetiawan
           password: ${{ secrets.TOKEN_GITHUB }}
 
       - name: Deploy
