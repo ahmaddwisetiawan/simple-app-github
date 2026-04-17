@@ -1,5 +1,5 @@
 services:
   webserver:
-    image: ghcr.io/ahmaddwisetiawan/nginx-final-banget
+    image: ghcr.io/ahmaddwisetiawan/$NAME_BARU:latest
     ports:
       - "8080:80"
