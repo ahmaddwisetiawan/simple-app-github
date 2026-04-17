@@ -1,12 +1,13 @@
 name: Build, Push and Deploy Docker Image
-run-name: Build, Push and Deploy Image
+
 on: [push]
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/nginx-ahmaddwisetiawan
 
 permissions:
   contents: read
   packages: write
+
+env:
+  IMAGE_NAME: "ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan"
 
 jobs:
   build-push-image:
@@ -14,18 +15,15 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+
       - name: Build Image
-        run: docker build -t $IMAGE_NAME .
-      - name: List Image
-        run: docker images
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: docker build -t ${{ env.IMAGE_NAME }} .
+
+      - name: Login to GitHub Registry
+        run: echo "${{ secrets.TOKEN_GITHUB }}" | docker login ghcr.io -u ahmaddwisetiawan --password-stdin
+
       - name: Push Image
-        run: docker push $IMAGE_NAME
+        run: docker push ${{ env.IMAGE_NAME }}
 
   deploy:
     needs: build-push-image
@@ -33,19 +31,17 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to GitHub Registry
+        run: echo "${{ secrets.TOKEN_GITHUB }}" | docker login ghcr.io -u ahmaddwisetiawan --password-stdin
+
       - name: stop and remove existing container
-        run: docker compose down --rmi all
+        run: docker compose down --rmi all || true
+
       - name: start container
         run: |
           docker compose up -d
-          sleep 10  
-      - name: view container
-        run: docker compose ps
+          sleep 10
+
       - name: check container
         run: curl localhost:8080

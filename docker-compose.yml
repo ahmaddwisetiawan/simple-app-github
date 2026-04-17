@@ -1,5 +1,5 @@
 services:
   webserver:
-    image: ghcr.io/username_github/nginx-AHMADDWISETIAWAN
+    image: ghcr.io/ahmaddwisetiawan/nginx-ahmaddwisetiawan
     ports:
       - "8080:80"
